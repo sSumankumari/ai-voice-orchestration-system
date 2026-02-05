@@ -1,0 +1,508 @@
+{
+  "info": {
+    "name": "AI Voice Orchestration System",
+    "description": "API endpoints for the AI Voice Orchestration System with Django REST and FastAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Obtain JWT Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"your_username\",\n  \"password\": \"your_password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token",
+                ""
+              ]
+            },
+            "description": "Get JWT access and refresh tokens for authentication"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh JWT Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"your_refresh_token_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token",
+                "refresh",
+                ""
+              ]
+            },
+            "description": "Refresh expired JWT access token using refresh token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agents Management",
+      "item": [
+        {
+          "name": "Get All Agents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "disabled": false
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Retrieve list of all agents (public read access)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agent by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/agents/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                "1",
+                ""
+              ]
+            },
+            "description": "Retrieve a specific agent by ID (public read access)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Medical Assistant\",\n  \"category\": \"medical\",\n  \"system_prompt\": \"You are a medical guidance AI. Provide general health information, precautions, and explanations. Do NOT provide diagnoses or prescriptions. Always include disclaimers.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Create a new agent (authenticated users only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Agent",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Advanced Medical Assistant\",\n  \"category\": \"medical\",\n  \"system_prompt\": \"You are an advanced medical guidance AI. Provide comprehensive health information with detailed precautions and explanations. Always include medical disclaimers.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                "1",
+                ""
+              ]
+            },
+            "description": "Update an existing agent (authenticated users only, owner)"
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update Agent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Medical Assistant v2\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                "1",
+                ""
+              ]
+            },
+            "description": "Partially update an agent (authenticated users only, owner)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Agent",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/agents/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                "1",
+                ""
+              ]
+            },
+            "description": "Delete an agent (authenticated users only, owner)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agent Category Reference",
+      "item": [
+        {
+          "name": "Medical Agent Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Health Consultant\",\n  \"category\": \"medical\",\n  \"system_prompt\": \"You are a medical guidance AI. Provide general health information, precautions, and explanations. Do NOT provide diagnoses or prescriptions. Always include disclaimers.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Create a medical category agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Nutrition Agent Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nutrition Advisor\",\n  \"category\": \"nutrition\",\n  \"system_prompt\": \"You are a nutrition and healthy lifestyle assistant. Provide diet advice, meal planning tips, and wellness guidance based on user goals.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Create a nutrition category agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Finance Agent Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Financial Advisor\",\n  \"category\": \"finance\",\n  \"system_prompt\": \"You are a financial guidance assistant. Provide general financial planning advice related to savings, careers, investments, and budgeting. Avoid legal guarantees.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Create a finance category agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Legal Agent Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Legal Assistant\",\n  \"category\": \"legal\",\n  \"system_prompt\": \"You are a legal awareness assistant. Provide general legal information and explain concepts clearly. Do not give jurisdiction-specific legal advice.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Create a legal category agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Research Agent Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Research Assistant\",\n  \"category\": \"research\",\n  \"system_prompt\": \"You are a research assistant AI. Help summarize papers, explain concepts, and guide literature review. Use clear explanations and structured reasoning.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Create a research category agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Interview Agent Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Interview Coach\",\n  \"category\": \"interview\",\n  \"system_prompt\": \"You are an interview preparation coach. Help with interview questions, explanations, mock interviews, and assessment preparation.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "agents",
+                ""
+              ]
+            },
+            "description": "Create an interview category agent"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "WebSocket Chat (FastAPI Streaming)",
+      "item": [
+        {
+          "name": "Connect to Agent Chat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "ws://{{ws_base_url}}/ws/chat/1",
+              "protocol": "ws",
+              "host": [
+                "{{ws_base_url}}"
+              ],
+              "path": [
+                "ws",
+                "chat",
+                "1"
+              ]
+            },
+            "description": "WebSocket connection to chat with agent (replace 1 with agent_id). Use this in Postman's WebSocket feature or any WebSocket client. Send text messages to interact with the agent."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string",
+      "description": "Django REST API base URL"
+    },
+    {
+      "key": "ws_base_url",
+      "value": "127.0.0.1:8000",
+      "type": "string",
+      "description": "FastAPI WebSocket server base URL"
+    },
+    {
+      "key": "access_token",
+      "value": "your_jwt_access_token_here",
+      "type": "string",
+      "description": "JWT access token obtained from /api/token/ endpoint"
+    }
+  ]
+}
