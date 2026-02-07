@@ -1,35 +1,79 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import AgentList from './components/AgentList';
+import ChatInterface from './components/ChatInterface';
+import Auth from './components/Auth';
+import { apiService } from './services/api';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    // Check if user has a token
+    const token = localStorage.getItem('token');
+    if (token) {
+      apiService.setToken(token);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    setShowAuth(false);
+  };
+
+  const handleLogout = () => {
+    apiService.setToken(null);
+    setIsAuthenticated(false);
+    setSelectedAgent(null);
+  };
+
+  const handleSelectAgent = (agent) => {
+    setSelectedAgent(agent);
+  };
+
+  if (showAuth) {
+    return <Auth onLogin={handleLogin} />;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app">
+      <div className="app-header">
+        <div className="app-title">
+          <h1>🤖 AI Voice Orchestration System</h1>
+          <p>Real-time conversational AI with agentic architecture</p>
+        </div>
+        <div className="app-actions">
+          {isAuthenticated ? (
+            <>
+              <span className="user-status">✓ Authenticated</span>
+              <button onClick={handleLogout} className="btn-logout">
+                Logout
+              </button>
+            </>
+          ) : (
+            <button onClick={() => setShowAuth(true)} className="btn-login-header">
+              Login
+            </button>
+          )}
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+
+      <div className="app-content">
+        <div className="sidebar">
+          <AgentList 
+            onSelectAgent={handleSelectAgent}
+            selectedAgentId={selectedAgent?.id}
+          />
+        </div>
+        <div className="main-content">
+          <ChatInterface agent={selectedAgent} />
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;

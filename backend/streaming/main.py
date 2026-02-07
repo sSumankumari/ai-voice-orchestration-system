@@ -9,3 +9,7 @@ app = FastAPI(
 
 # Register WebSocket routes
 app.include_router(websocket_router)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("streaming.main:app", host="0.0.0.0", port=8001, reload=True)
