@@ -1,39 +1,31 @@
-from ai.intent_classifier import IntentClassifier
-from ai.responder import ResponderAgent
+from ai.controller.qwen_controller import QwenController
+from ai.conversation.llama_responder import LlamaResponder
 from ai.session_state import SessionState
-from ai.llm_client import GeminiLLMClient
-
 
 class Orchestrator:
-    """
-    Central agentic controller.
-    """
-
     def __init__(self):
-        self.intent_classifier = IntentClassifier()
-        self.session = SessionState()
-        self.llm_client = GeminiLLMClient()
-        self.responder = ResponderAgent(self.llm_client)
+        self.controller = QwenController()
+        self.responder = LlamaResponder()
+        self.sessions = {}
 
-    def handle_message(self, message: str) -> str:
-        self.session.add_user_message(message)
+    def handle_message(self, session_id: str, user_message: str, user_prompt: str):
+        if session_id not in self.sessions:
+            self.sessions[session_id] = SessionState()
 
-        result = self.intent_classifier.classify(message)
-        intent = result["intent"]
-        category = result["category"] or "general"
+        session = self.sessions[session_id]
 
-        if intent == "greeting":
-            response = "Hello! How can I assist you today?"
+        # Step 1: intent classification (for logging / future routing)
+        intent = self.controller.classify_intent(user_message)
 
-        elif intent == "farewell":
-            response = "Goodbye! Feel free to return anytime."
+        # Step 2: generate AI response
+        response = self.responder.generate(
+            system_prompt=user_prompt,
+            user_message=user_message,
+            context=session.history
+        )
 
-        else:
-            response = self.responder.respond(
-                user_message=message,
-                category=category,
-                context=self.session.get_context()
-            )
+        # Step 3: update memory AFTER response
+        session.add_user_message(user_message)
+        session.add_ai_message(response)
 
-        self.session.add_agent_message(response)
-        return response
+        return response, intent

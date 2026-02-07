@@ -1,16 +1,29 @@
+from typing import List, Dict
+
 class SessionState:
     """
-        Stores conversation history per session.
+    Maintains conversation memory per session.
     """
 
-    def __init__(self):
-        self.history = []
+    def __init__(self, max_history: int = 10):
+        self.history: List[Dict[str, str]] = []
+        self.max_history = max_history
 
     def add_user_message(self, message: str):
-        self.history.append({"role": "user", "content": message})
+        self._add_message("user", message)
 
-    def add_agent_message(self, message: str):
-        self.history.append({"role": "assistant", "content": message})
+    def add_ai_message(self, message: str):
+        self._add_message("assistant", message)
 
-    def get_context(self):
-        return self.history[-10:]
+    def _add_message(self, role: str, content: str):
+        self.history.append({
+            "role": role,
+            "content": content
+        })
+
+        # Keep bounded memory
+        if len(self.history) > self.max_history:
+            self.history = self.history[-self.max_history:]
+
+    def clear(self):
+        self.history = []
