@@ -49,3 +49,6 @@ Thumbs.db
 
 # Coverage / test reports
 coverage/
+
+# Misc
+docs/POSTMAN_SETUP_GUIDE.md

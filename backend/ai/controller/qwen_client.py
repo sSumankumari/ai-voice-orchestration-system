@@ -4,7 +4,7 @@ OLLAMA_API_BASE = "http://localhost:11434/v1"
 
 def qwen_infer(prompt: str) -> str:
     payload = {
-        "model": "qwen2.5:7b",
+        "model": "qwen2.5:1.5b",  # smaller model
         "messages": [
             {
                 "role": "system",
