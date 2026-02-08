@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Dashboard.css';
 
-const CATEGORIES = [
-  'medical', 'nutrition', 'finance', 'legal', 'research', 'interview', 'general'
-];
+// Default icon for unknown categories
+const DEFAULT_ICON = '🤖';
 
+// Predefined icons (optional, for common categories)
 const CATEGORY_ICONS = {
   medical: '🏥',
   nutrition: '🥗',
@@ -14,7 +14,12 @@ const CATEGORY_ICONS = {
   legal: '⚖️',
   research: '🔬',
   interview: '💼',
-  general: '💬'
+  general: '💬',
+  technology: '💻',
+  education: '📚',
+  travel: '✈️',
+  fitness: '💪',
+  entertainment: '🎬'
 };
 
 function Dashboard({ token, onLogout }) {
@@ -24,7 +29,7 @@ function Dashboard({ token, onLogout }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newAgent, setNewAgent] = useState({
     name: '',
-    category: 'general',
+    category: '',
     system_prompt: ''
   });
   const [creating, setCreating] = useState(false);
@@ -51,7 +56,7 @@ function Dashboard({ token, onLogout }) {
   const handleCreateAgent = async (e) => {
     e.preventDefault();
     
-    if (!newAgent.name.trim() || !newAgent.system_prompt.trim()) {
+    if (!newAgent.name.trim() || !newAgent.category.trim() || !newAgent.system_prompt.trim()) {
       setError('Please fill in all fields');
       return;
     }
@@ -61,7 +66,7 @@ function Dashboard({ token, onLogout }) {
 
     try {
       await api.createAgent(newAgent);
-      setNewAgent({ name: '', category: 'general', system_prompt: '' });
+      setNewAgent({ name: '', category: '', system_prompt: '' });
       setShowCreateForm(false);
       loadAgents();
     } catch (err) {
@@ -90,33 +95,24 @@ function Dashboard({ token, onLogout }) {
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <div className="header-left">
-          <h1>🤖 AI Agents Dashboard</h1>
-          <p className="header-subtitle">{agents.length} agent{agents.length !== 1 ? 's' : ''} available</p>
-        </div>
-        <button onClick={onLogout} className="btn btn-secondary">
-          Logout
-        </button>
-      </header>
-
-      {error && (
-        <div className="dashboard-content">
-          <div className="error-message">
-            {error}
-            <button onClick={() => setError('')} style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
-          </div>
-        </div>
-      )}
-
-      <div className="dashboard-content">
-        <div className="actions-bar">
-          <button 
-            onClick={() => setShowCreateForm(!showCreateForm)} 
-            className="btn btn-primary"
-          >
-            {showCreateForm ? '✕ Cancel' : '+ Create New Agent'}
+        <h1>🤖 AI Agent Dashboard</h1>
+        <div className="header-actions">
+          <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
+            {showCreateForm ? '✕ Cancel' : '+ Create Agent'}
+          </button>
+          <button onClick={onLogout} className="btn btn-secondary">
+            Logout
           </button>
         </div>
+      </header>
+
+      <main className="dashboard-main">
+        {error && (
+          <div className="error-banner">
+            ⚠️ {error}
+            <button onClick={() => setError('')} className="close-btn">✕</button>
+          </div>
+        )}
 
         {showCreateForm && (
           <div className="create-agent-form">
@@ -129,7 +125,7 @@ function Dashboard({ token, onLogout }) {
                   type="text"
                   value={newAgent.name}
                   onChange={(e) => setNewAgent({ ...newAgent, name: e.target.value })}
-                  placeholder="e.g., Medical Assistant, Finance Advisor"
+                  placeholder="e.g., Medical Assistant, Finance Advisor, Career Counselor"
                   required
                   autoFocus
                 />
@@ -137,18 +133,23 @@ function Dashboard({ token, onLogout }) {
 
               <div className="form-group">
                 <label htmlFor="agentCategory">Category</label>
-                <select
+                <input
                   id="agentCategory"
+                  type="text"
                   value={newAgent.category}
-                  onChange={(e) => setNewAgent({ ...newAgent, category: e.target.value })}
+                  onChange={(e) => setNewAgent({ ...newAgent, category: e.target.value.toLowerCase() })}
+                  placeholder="e.g., medical, finance, education, technology, travel"
                   required
-                >
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>
-                      {CATEGORY_ICONS[cat]} {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
+                  list="category-suggestions"
+                />
+                <datalist id="category-suggestions">
+                  {Object.keys(CATEGORY_ICONS).map(cat => (
+                    <option key={cat} value={cat} />
                   ))}
-                </select>
+                </datalist>
+                <small className="form-hint">
+                  Enter any category - not limited to predefined options!
+                </small>
               </div>
 
               <div className="form-group">
@@ -199,21 +200,18 @@ function Dashboard({ token, onLogout }) {
               <div key={agent.id} className="agent-card">
                 <div className="agent-header">
                   <h3>
-                    {CATEGORY_ICONS[agent.category] || '💬'} {agent.name}
+                    {CATEGORY_ICONS[agent.category] || DEFAULT_ICON} {agent.name}
                   </h3>
                   <span className={`category-badge badge-${agent.category}`}>
                     {agent.category}
                   </span>
                 </div>
+                
                 <p className="agent-prompt">
-                  {agent.system_prompt.length > 150 
-                    ? agent.system_prompt.substring(0, 150) + '...' 
-                    : agent.system_prompt}
+                  {agent.system_prompt.substring(0, 120)}
+                  {agent.system_prompt.length > 120 && '...'}
                 </p>
-                <div className="agent-meta">
-                  <small>ID: {agent.id}</small>
-                  <small>Created: {new Date(agent.created_at).toLocaleDateString()}</small>
-                </div>
+                
                 <div className="agent-actions">
                   <button 
                     onClick={() => startChat(agent.id)} 
@@ -228,11 +226,15 @@ function Dashboard({ token, onLogout }) {
                     🗑️ Delete
                   </button>
                 </div>
+                
+                <small className="agent-meta">
+                  Created {new Date(agent.created_at).toLocaleDateString()}
+                </small>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

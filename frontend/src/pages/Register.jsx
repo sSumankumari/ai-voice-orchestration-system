@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Auth.css';
 
-function Register({ onLogin }) {
+function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess(false);
 
+    // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -28,16 +32,18 @@ function Register({ onLogin }) {
     setLoading(true);
 
     try {
-      // Note: You'll need to create a register endpoint in Django
-      // For now, we'll show an error
-      setError('Registration endpoint not available. Please use Django admin to create users.');
+      // Register user
+      await api.register(username, email, password);
       
-      // Uncomment when register endpoint is ready:
-      // await api.register(username, email, password);
-      // const data = await api.login(username, password);
-      // onLogin(data.access);
+      setSuccess(true);
+      
+      // Auto-login after 1.5 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+      
     } catch (err) {
-      setError(err.message || 'Registration failed. Username might already exist.');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -54,6 +60,11 @@ function Register({ onLogin }) {
         <h2>Create New Account</h2>
         
         {error && <div className="error-message">{error}</div>}
+        {success && (
+          <div className="success-message">
+            ✅ Account created successfully! Redirecting to login...
+          </div>
+        )}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -67,6 +78,7 @@ function Register({ onLogin }) {
               required
               autoFocus
               autoComplete="username"
+              disabled={loading || success}
             />
           </div>
           
@@ -80,6 +92,7 @@ function Register({ onLogin }) {
               placeholder="Enter your email"
               required
               autoComplete="email"
+              disabled={loading || success}
             />
           </div>
           
@@ -93,6 +106,7 @@ function Register({ onLogin }) {
               placeholder="Create a password (min 8 chars)"
               required
               autoComplete="new-password"
+              disabled={loading || success}
             />
           </div>
           
@@ -106,23 +120,22 @@ function Register({ onLogin }) {
               placeholder="Re-enter your password"
               required
               autoComplete="new-password"
+              disabled={loading || success}
             />
           </div>
           
-          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Register'}
+          <button 
+            type="submit" 
+            className="btn btn-primary btn-block" 
+            disabled={loading || success}
+          >
+            {loading ? 'Creating Account...' : success ? 'Success! ✓' : 'Register'}
           </button>
         </form>
         
         <p className="auth-footer">
           Already have an account? <Link to="/login">Login here</Link>
         </p>
-        
-        <div className="auth-note">
-          <strong>Note:</strong> Currently, please use Django admin panel to create users.
-          <br />
-          Run: <code>python manage.py createsuperuser</code>
-        </div>
       </div>
     </div>
   );

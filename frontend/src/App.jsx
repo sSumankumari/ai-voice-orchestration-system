@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -24,22 +24,23 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+          element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" replace />}
         />
         <Route
           path="/register"
-          element={!token ? <Register onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+          element={!token ? <Register onLogin={handleLogin} /> : <Navigate to="/dashboard" replace />}
         />
         <Route
           path="/dashboard"
-          element={token ? <Dashboard token={token} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          element={token ? <Dashboard token={token} onLogout={handleLogout} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/chat/:agentId"
-          element={token ? <AgentChat token={token} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          element={token ? <AgentChat token={token} onLogout={handleLogout} /> : <Navigate to="/login" replace />}
         />
-        <Route path="/" element={<Navigate to="/dashboard" />} />
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        {/* Change this line - redirect root to login, not dashboard */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
