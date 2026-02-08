@@ -1,0 +1,510 @@
+{
+  "info": {
+    "_postman_id": "ai-voice-orch-v3-2026",
+    "name": "AI Voice Orchestration System - Complete API v3",
+    "description": "Complete API testing collection for AI Voice Orchestration System\n\n**Services:**\n- Django REST API (Port 8000): Authentication & Agent Management\n- FastAPI HTTP (Port 8001): Health checks and Documentation\n- WebSocket (Port 8001): Real-time AI Chat\n\n**System Requirements:**\n- RAM: 4GB+ (8GB recommended for qwen2.5:7b, 2GB+ for qwen2.5:1.5b)\n- Ollama: Running with qwen2.5:1.5b or qwen2.5:7b model\n- Python 3.10+\n- Services running on ports 8000 (Django) and 8001 (FastAPI)\n\n**Setup Instructions:**\n1. Import this collection into Postman\n2. Import the environment file\n3. Ensure all services are running:\n   - Django: `python manage.py runserver`\n   - FastAPI: `python -m streaming.main`\n   - Ollama: `ollama serve`\n4. Run 'Obtain JWT Token' first to authenticate\n5. Test WebSocket with valid agent ID\n\n**Version:** 3.0.0\n**Last Updated:** 2026-02-08\n**Enhanced Features:**\n- ✅ Health check endpoints\n- ✅ Error codes in responses\n- ✅ Enhanced logging\n- ✅ Better error handling\n- ✅ WebSocket close codes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "JWT-based authentication for Django REST API",
+      "item": [
+        {
+          "name": "Obtain JWT Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "if (jsonData.access) {",
+                  "    pm.environment.set(\"access_token\", jsonData.access);",
+                  "    console.log(\"✅ Access token saved\");",
+                  "}",
+                  "",
+                  "if (jsonData.refresh) {",
+                  "    pm.environment.set(\"refresh_token\", jsonData.refresh);",
+                  "    console.log(\"✅ Refresh token saved\");",
+                  "}",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains tokens\", function () {",
+                  "    pm.expect(jsonData).to.have.property('access');",
+                  "    pm.expect(jsonData).to.have.property('refresh');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"your_username\",\n  \"password\": \"your_password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "token", ""]
+            },
+            "description": "Obtain JWT access and refresh tokens by providing Django superuser credentials.\n\n**Required:**\n- username: Django superuser username\n- password: Django superuser password\n\n**Returns:**\n- access: JWT access token (auto-saved to environment)\n- refresh: JWT refresh token (auto-saved to environment)\n\n**Example:**\n```json\n{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}\n```"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}"
+                },
+                "url": "{{base_url}}/api/token/"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "body": "{\n  \"access\": \"eyJ0eXAiOiJKV1QiLCJhbGc...\",\n  \"refresh\": \"eyJ0eXAiOiJKV1QiLCJhbGc...\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh JWT Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "if (jsonData.access) {",
+                  "    pm.environment.set(\"access_token\", jsonData.access);",
+                  "    console.log(\"✅ Access token refreshed\");",
+                  "}",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "token", "refresh", ""]
+            },
+            "description": "Refresh expired access token using refresh token.\n\n**Required:**\n- refresh: Valid refresh token from login\n\n**Returns:**\n- access: New JWT access token (auto-saved)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agents Management",
+      "description": "CRUD operations for AI agents (Django REST API)",
+      "item": [
+        {
+          "name": "Get All Agents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "description": "Optional - public read access",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "agents", ""]
+            },
+            "description": "Retrieve list of all AI agents.\n\n**Authentication:** Optional (public read access)\n\n**Returns:** Array of agent objects"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agent by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData).to.have.property('category');",
+                  "    pm.expect(jsonData).to.have.property('system_prompt');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/agents/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "agents", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Agent ID"
+                }
+              ]
+            },
+            "description": "Retrieve specific agent by ID.\n\n**Path Parameter:**\n- id: Agent ID (integer)\n\n**Used by:** FastAPI WebSocket to fetch agent config"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.environment.set(\"last_created_agent_id\", jsonData.id);",
+                  "    console.log(\"✅ Agent created with ID: \" + jsonData.id);",
+                  "    console.log(\"💡 Test WebSocket: ws://127.0.0.1:8001/ws/chat/\" + jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Financial Advisor Agent\",\n  \"category\": \"finance\",\n  \"system_prompt\": \"You are a helpful financial advisor specializing in student loans and budgeting. Provide clear, actionable advice.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "agents", ""]
+            },
+            "description": "Create a new AI agent (requires authentication).\n\n**Required Fields:**\n- name: Agent display name\n- category: One of the valid categories\n- system_prompt: Instructions for the agent\n\n**Available Categories:**\nmedical, nutrition, fitness, mental_health, finance, investment, tax, insurance, real_estate, legal, business, marketing, sales, career, interview, education, tutoring, coding, tech_support, writing, design, travel, cooking, general"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Agent (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Financial Advisor\",\n  \"category\": \"finance\",\n  \"system_prompt\": \"You are an expert financial advisor with 10+ years of experience.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/:id/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "agents", ":id", ""],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{last_created_agent_id}}"
+                }
+              ]
+            },
+            "description": "Full update of agent (all fields required)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Agent (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"system_prompt\": \"You are a financial advisor focusing on education loans and debt management.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/agents/:id/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "agents", ":id", ""],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{last_created_agent_id}}"
+                }
+              ]
+            },
+            "description": "Partial update (only specified fields)."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "console.log(\"✅ Agent deleted\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/agents/:id/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "agents", ":id", ""],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{last_created_agent_id}}"
+                }
+              ]
+            },
+            "description": "Delete agent permanently (requires authentication)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "FastAPI Service",
+      "description": "FastAPI health checks and documentation",
+      "item": [
+        {
+          "name": "FastAPI Root (Health Check)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Service is running\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql(\"running\");",
+                  "    pm.expect(jsonData).to.have.property('endpoints');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fastapi_url}}/",
+              "host": ["{{fastapi_url}}"],
+              "path": [""]
+            },
+            "description": "Root endpoint - returns service information and available endpoints.\n\n**Expected Response:**\n```json\n{\n  \"service\": \"AI Voice Orchestration Streaming Service\",\n  \"status\": \"running\",\n  \"version\": \"1.0.0\",\n  \"endpoints\": {\n    \"websocket\": \"/ws/chat/{agent_id}\",\n    \"docs\": \"/docs\",\n    \"redoc\": \"/redoc\",\n    \"health\": \"/health\"\n  }\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "FastAPI Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Service is healthy\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql(\"healthy\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fastapi_url}}/health",
+              "host": ["{{fastapi_url}}"],
+              "path": ["health"]
+            },
+            "description": "Dedicated health check endpoint for monitoring.\n\n**Expected Response:**\n```json\n{\n  \"status\": \"healthy\",\n  \"service\": \"streaming\",\n  \"message\": \"FastAPI WebSocket service is running\"\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "FastAPI Interactive Docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fastapi_url}}/docs",
+              "host": ["{{fastapi_url}}"],
+              "path": ["docs"]
+            },
+            "description": "Access FastAPI's interactive Swagger UI documentation.\n\n**Opens in browser:** http://127.0.0.1:8001/docs\n\nYou can test the WebSocket endpoint directly from the Swagger UI."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "WebSocket Documentation",
+      "description": "WebSocket connection guide and examples",
+      "item": [
+        {
+          "name": "📘 WebSocket Connection Guide",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fastapi_url}}/docs",
+              "host": ["{{fastapi_url}}"],
+              "path": ["docs"]
+            },
+            "description": "# 🔌 WebSocket Real-Time Chat Guide\n\n⚠️ **Important:** WebSocket connections require a WebSocket client, not HTTP requests.\n\n---\n\n## 🎯 WebSocket Endpoint\n\n```\nws://127.0.0.1:8001/ws/chat/{agent_id}\n```\n\n**Replace `{agent_id}`** with a valid agent ID from `/api/agents/`\n\n---\n\n## 🚀 Testing in Postman Desktop\n\n### Step 1: Create WebSocket Request\n1. Click **New** → **WebSocket Request**\n2. Enter URL: `ws://127.0.0.1:8001/ws/chat/1`\n3. Click **Connect**\n\n### Step 2: Connection Confirmation\nYou'll receive:\n```json\n{\n  \"type\": \"connected\",\n  \"session_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"agent_id\": 1,\n  \"category\": \"finance\",\n  \"message\": \"Connected to finance agent. You can start chatting!\"\n}\n```\n\n### Step 3: Send Messages\nType plain text messages (NOT JSON):\n```\nHi, I need advice on student loans\n```\n\n### Step 4: Receive AI Responses\n```json\n{\n  \"type\": \"response\",\n  \"message\": \"I'd be happy to help with your student loan questions. What specific aspects would you like to know about?\",\n  \"intent\": \"finance\",\n  \"timestamp\": \"2026-02-08T14:30:00Z\"\n}\n```\n\n---\n\n## 📊 Message Types\n\n### Server → Client Messages\n\n#### 1. Connection Success\n```json\n{\n  \"type\": \"connected\",\n  \"session_id\": \"uuid\",\n  \"agent_id\": 1,\n  \"category\": \"finance\",\n  \"message\": \"Connected to finance agent...\"\n}\n```\n\n#### 2. AI Response\n```json\n{\n  \"type\": \"response\",\n  \"message\": \"AI-generated response text\",\n  \"intent\": \"finance\",\n  \"timestamp\": \"2026-02-08T14:30:00Z\"\n}\n```\n\n#### 3. Error Messages\n```json\n{\n  \"type\": \"error\",\n  \"message\": \"Error description\",\n  \"code\": \"ERROR_CODE\",\n  \"details\": \"Additional error information\"\n}\n```\n\n### Client → Server Messages\nSend **plain text only** (not JSON):\n```\nHello, I need help\n```\n\n---\n\n## 🔴 Error Codes Reference\n\n| Code | Description | Solution |\n|------|-------------|----------|\n| `INVALID_AGENT_ID` | Agent not found | Create agent via POST /api/agents/ |\n| `ORCHESTRATOR_INIT_FAILED` | AI service failed to start | Check Ollama is running |\n| `EMPTY_MESSAGE` | Empty message sent | Send valid text message |\n| `AI_SERVICE_ERROR` | Ollama/model error | Verify Ollama with `ollama list` |\n| `PROCESSING_ERROR` | Generic processing error | Retry the message |\n| `UNEXPECTED_ERROR` | Unknown error | Check FastAPI logs |\n\n---\n\n## 💻 JavaScript Example\n\n```javascript\nconst ws = new WebSocket('ws://127.0.0.1:8001/ws/chat/1');\n\nws.onopen = () => {\n  console.log('✅ Connected');\n};\n\nws.onmessage = (event) => {\n  const data = JSON.parse(event.data);\n  console.log('📨 Received:', data);\n  \n  switch(data.type) {\n    case 'connected':\n      console.log('Session ID:', data.session_id);\n      ws.send('Hello, I need financial advice');\n      break;\n      \n    case 'response':\n      console.log('🤖 AI:', data.message);\n      console.log('Intent:', data.intent);\n      break;\n      \n    case 'error':\n      console.error('❌ Error:', data.message);\n      console.error('Code:', data.code);\n      break;\n  }\n};\n\nws.onerror = (error) => {\n  console.error('WebSocket error:', error);\n};\n\nws.onclose = () => {\n  console.log('🔌 Disconnected');\n};\n```\n\n---\n\n## 🐍 Python Example\n\n```python\nimport asyncio\nimport websockets\nimport json\n\nasync def test_chat():\n    uri = \"ws://127.0.0.1:8001/ws/chat/1\"\n    \n    async with websockets.connect(uri) as websocket:\n        # Receive connection confirmation\n        response = await websocket.recv()\n        data = json.loads(response)\n        print(f\"Connected: {data}\")\n        \n        # Send message\n        await websocket.send(\"I need help with my loans\")\n        \n        # Receive AI response\n        response = await websocket.recv()\n        data = json.loads(response)\n        print(f\"AI: {data['message']}\")\n        print(f\"Intent: {data['intent']}\")\n\nasyncio.run(test_chat())\n```\n\n---\n\n## 🐛 Troubleshooting\n\n### ❌ Connection Refused\n**Problem:** Cannot connect to WebSocket\n\n**Solutions:**\n1. Ensure FastAPI is running:\n   ```bash\n   cd backend\n   python -m streaming.main\n   ```\n2. Check port 8001 is not blocked:\n   ```bash\n   netstat -ano | findstr :8001\n   ```\n\n---\n\n### ❌ Error: INVALID_AGENT_ID\n**Problem:** Agent doesn't exist\n\n**Solutions:**\n1. Get list of agents:\n   ```\n   GET http://127.0.0.1:8000/api/agents/\n   ```\n2. Create a new agent:\n   ```\n   POST http://127.0.0.1:8000/api/agents/\n   ```\n\n---\n\n### ❌ Error: AI_SERVICE_ERROR\n**Problem:** Ollama not responding\n\n**Solutions:**\n1. Check Ollama is running:\n   ```bash\n   ollama list\n   ```\n2. Pull the model:\n   ```bash\n   ollama pull qwen2.5:1.5b\n   ```\n3. Test the model:\n   ```bash\n   ollama run qwen2.5:1.5b \"test\"\n   ```\n4. Check memory:\n   ```bash\n   # Windows PowerShell\n   Get-WmiObject Win32_OperatingSystem | Select FreePhysicalMemory\n   ```\n\n---\n\n### ❌ Error: 500 Internal Server Error (Memory)\n**Problem:** Not enough RAM for model\n\n**Solution:** Use smaller model\n```bash\n# Pull smaller model\nollama pull qwen2.5:1.5b\n\n# Update qwen_client.py\n\"model\": \"qwen2.5:1.5b\"\n```\n\n---\n\n## 📋 Available Agent Categories\n\n### Health & Wellness\n- medical, nutrition, fitness, mental_health, meditation\n\n### Finance\n- finance, investment, tax, insurance, real_estate\n\n### Professional\n- legal, business, marketing, sales, career, interview\n\n### Education\n- education, tutoring, language_learning, research\n\n### Technology\n- coding, tech_support, cybersecurity\n\n### Creative\n- writing, design, music, photography\n\n### Lifestyle\n- travel, cooking, parenting, relationships, entertainment, sports, gaming\n\n### General\n- general (fallback category)\n\n---\n\n## 🔗 Related Endpoints\n\n- **List Agents:** `GET {{base_url}}/api/agents/`\n- **Create Agent:** `POST {{base_url}}/api/agents/`\n- **FastAPI Docs:** `GET {{fastapi_url}}/docs`\n- **Health Check:** `GET {{fastapi_url}}/health`\n\n---\n\n## 📝 Notes\n\n- **No Authentication Required:** WebSocket endpoint doesn't require JWT\n- **Session Management:** Each connection gets a unique session_id\n- **Message Format:** Send plain text, receive JSON\n- **Logging:** All messages logged in FastAPI console\n- **Error Handling:** All errors include error codes for debugging\n\n---\n\n**For more details:** http://127.0.0.1:8001/docs"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "fastapi_url",
+      "value": "http://127.0.0.1:8001",
+      "type": "string"
+    },
+    {
+      "key": "ws_url",
+      "value": "ws://127.0.0.1:8001",
+      "type": "string"
+    }
+  ]
+}
