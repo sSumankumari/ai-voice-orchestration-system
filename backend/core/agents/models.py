@@ -6,25 +6,15 @@ class Agent(models.Model):
     Persistent representation of an AI agent.
     """
 
-    CATEGORY_CHOICES = [
-        ("medical", "Medical"),
-        ("nutrition", "Nutrition"),
-        ("finance", "Finance"),
-        ("legal", "Legal"),
-        ("research", "Research"),
-        ("interview", "Interview"),
-        ("general", "General"),
-    ]
-
     name = models.CharField(
         max_length=100,
         help_text="Human-readable name of the AI agent"
     )
 
     category = models.CharField(
-        max_length=20,
-        choices=CATEGORY_CHOICES,
-        help_text="Domain category of the agent"
+        max_length=50,  # Increased from 20 to allow longer categories
+        help_text="Domain category of the agent (open-ended)",
+        db_index=True  # Add index for faster queries
     )
 
     system_prompt = models.TextField(

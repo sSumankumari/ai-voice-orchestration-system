@@ -77,7 +77,6 @@ DATABASES = {
     }
 }
 
-# ✅ Added: Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -100,5 +99,4 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# ✅ Added: Default auto field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
