@@ -1,0 +1,214 @@
+.dashboard-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.dashboard-header {
+  background: white;
+  padding: 24px 40px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left h1 {
+  font-size: 26px;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.header-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.dashboard-content {
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.actions-bar {
+  margin-bottom: 30px;
+}
+
+.create-agent-form {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 32px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.create-agent-form h2 {
+  margin: 0 0 24px 0;
+  color: #333;
+  font-size: 22px;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 6px;
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.agent-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.agent-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+}
+
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.agent-header h3 {
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.category-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.badge-medical { background: #e3f2fd; color: #1976d2; }
+.badge-nutrition { background: #f1f8e9; color: #689f38; }
+.badge-finance { background: #fff3e0; color: #f57c00; }
+.badge-legal { background: #fce4ec; color: #c2185b; }
+.badge-research { background: #e8eaf6; color: #3f51b5; }
+.badge-interview { background: #f3e5f5; color: #7b1fa2; }
+.badge-general { background: #e0e0e0; color: #616161; }
+
+.agent-prompt {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+  min-height: 65px;
+}
+
+.agent-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.agent-meta small {
+  font-size: 12px;
+  color: #999;
+}
+
+.agent-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.agent-actions .btn {
+  flex: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  font-size: 24px;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.loading-container p {
+  margin-top: 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .dashboard-content {
+    padding: 20px;
+  }
+
+  .agents-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-actions {
+    flex-direction: column;
+  }
+}

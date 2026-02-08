@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { apiService } from '../services/api';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../services/api';
 import './Auth.css';
 
-function Auth({ onLogin }) {
+function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,10 +15,10 @@ function Auth({ onLogin }) {
     setLoading(true);
 
     try {
-      await apiService.login(username, password);
-      onLogin();
+      const data = await api.login(username, password);
+      onLogin(data.access);
     } catch (err) {
-      setError('Login failed. Please check your credentials.');
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -28,12 +29,14 @@ function Auth({ onLogin }) {
       <div className="auth-card">
         <div className="auth-header">
           <h1>🤖 AI Voice Orchestration</h1>
-          <p>Sign in to manage your AI agents</p>
+          <p className="auth-subtitle">Real-time conversational AI system</p>
         </div>
-
-        <form onSubmit={handleSubmit} className="auth-form">
-          {error && <div className="auth-error">{error}</div>}
-
+        
+        <h2>Login to Your Account</h2>
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="username">Username</label>
             <input
@@ -41,12 +44,13 @@ function Auth({ onLogin }) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
               required
+              autoFocus
               autoComplete="username"
-              disabled={loading}
             />
           </div>
-
+          
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -54,26 +58,23 @@ function Auth({ onLogin }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
               required
               autoComplete="current-password"
-              disabled={loading}
             />
           </div>
-
-          <button type="submit" disabled={loading} className="btn-login">
-            {loading ? 'Signing in...' : 'Sign In'}
+          
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-
-        <div className="auth-footer">
-          <p className="auth-note">
-            ℹ️ Note: Read-only access available without login. 
-            Sign in to create and manage agents.
-          </p>
-        </div>
+        
+        <p className="auth-footer">
+          Don't have an account? <Link to="/register">Create one</Link>
+        </p>
       </div>
     </div>
   );
 }
 
-export default Auth;
+export default Login;

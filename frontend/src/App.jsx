@@ -1,78 +1,47 @@
-import { useState, useEffect } from 'react';
-import AgentList from './components/AgentList';
-import ChatInterface from './components/ChatInterface';
-import Auth from './components/Auth';
-import { apiService } from './services/api';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import AgentChat from './pages/AgentChat';
 import './App.css';
 
 function App() {
-  const [selectedAgent, setSelectedAgent] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
-  useEffect(() => {
-    // Check if user has a token
-    const token = localStorage.getItem('token');
-    if (token) {
-      apiService.setToken(token);
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    setShowAuth(false);
+  const handleLogin = (newToken) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
   };
 
   const handleLogout = () => {
-    apiService.setToken(null);
-    setIsAuthenticated(false);
-    setSelectedAgent(null);
+    localStorage.removeItem('token');
+    setToken(null);
   };
-
-  const handleSelectAgent = (agent) => {
-    setSelectedAgent(agent);
-  };
-
-  if (showAuth) {
-    return <Auth onLogin={handleLogin} />;
-  }
 
   return (
-    <div className="app">
-      <div className="app-header">
-        <div className="app-title">
-          <h1>🤖 AI Voice Orchestration System</h1>
-          <p>Real-time conversational AI with agentic architecture</p>
-        </div>
-        <div className="app-actions">
-          {isAuthenticated ? (
-            <>
-              <span className="user-status">✓ Authenticated</span>
-              <button onClick={handleLogout} className="btn-logout">
-                Logout
-              </button>
-            </>
-          ) : (
-            <button onClick={() => setShowAuth(true)} className="btn-login-header">
-              Login
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="app-content">
-        <div className="sidebar">
-          <AgentList 
-            onSelectAgent={handleSelectAgent}
-            selectedAgentId={selectedAgent?.id}
-          />
-        </div>
-        <div className="main-content">
-          <ChatInterface agent={selectedAgent} />
-        </div>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+        />
+        <Route
+          path="/register"
+          element={!token ? <Register onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+        />
+        <Route
+          path="/dashboard"
+          element={token ? <Dashboard token={token} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/chat/:agentId"
+          element={token ? <AgentChat token={token} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
